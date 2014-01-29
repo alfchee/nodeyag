@@ -6,18 +6,11 @@ var express = require('express'),
     mongoose = require('mongoose');
 
 app.configure(function() {
-    app.use(express.logger('dev'));
+    app.use(express.logger());
     app.use(express.bodyParser());
     app.use(express.methodOverride());
     app.use(app.router);
 });
-
-app.get('/',function(req,res) {
-    res.send('Hello world');
-});
-
-// importing routes
-est = require('./routes/establecimientos')(app);
 
 // connection to mongodb
 mongoose.connect('mongodb://localhost/yag',function(err,res) {
@@ -28,12 +21,15 @@ mongoose.connect('mongodb://localhost/yag',function(err,res) {
     }
 });
 
-// acces the mongoose-dbref module and install everything
-var dbref = require('mongoose-dbref');
-var utils = dbref.utils;
 
-// install the types, plugins and monkey patches
-var loaded = dbref.install(mongoose);
+
+
+app.get('/',function(req,res) {
+    res.send('Hello world');
+});
+
+// importing routes
+est = require('./routes/establecimientos')(app);
 
 server.listen(3000,function() {
     console.log("Node server running on http://localhost:3000");

@@ -1,9 +1,7 @@
 
 module.exports = function(app) {
 
-    var Est = require('../models/establecimiento'),
-        ciudad = require('../models/ciudad'),
-        negocio = require('../models/negocio');
+    var Est = require('../models/establecimiento');
 
     // GET - return all Establecimientos
     findAllEst = function(req, res) {
@@ -27,5 +25,8 @@ module.exports = function(app) {
         });
     }//findById()
 
+    // Link routes and functions
+    app.get('/establecimiento',findAllEst);
+    app.get('/establecimiento/:id',findById);
     
 }// end of exportation of the routes
