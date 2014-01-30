@@ -1,7 +1,6 @@
 
 var mongoose = require('mongoose'),
-    Schema = mongoose.Schema,
-    DBRef = mongoose.SchemaTypes.DBRef;
+    Schema = mongoose.Schema;
 
 var EmergenciaSchema = new Schema({
     tipo:    { type: String },
@@ -17,4 +16,4 @@ var CiudadSchema = new Schema({
     emergenciaServicios: [EmergenciaSchema],
 });
 
-module.exports = mongoose.model('Ciudad', CiudadSchema);
+module.exports = mongoose.model('Ciudad', CiudadSchema,'Ciudad');

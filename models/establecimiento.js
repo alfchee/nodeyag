@@ -3,33 +3,10 @@
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
-
-var DBRef = mongoose.SchemaTypes.DBRef;
-
 var TelefonoSchema = new Schema({
     tipo:    { type: String },
     numero:  { type: String }
 });
-
-var EmergenciaSchema = new Schema({
-    tipo:    { type: String },
-    telefono:    { type: String }
-});
-
-var CiudadSchema = new Schema({
-    nombre:    { type: String },
-    coordinates:   { 
-        x:    { type: Number },
-        y:    { type: Number}
-    },
-    emergenciaServicios: [EmergenciaSchema],
-});
-
-/*var NegocioSchema = new Schema({
-    nombre:    { type: String },
-    dirOficinaCentral:   { type: String },
-    establecimientos: [EstablecimientoSchema]
-});*/
 
 var EstablecimientoSchema = new Schema({
     nombre:    { type: String },
@@ -39,10 +16,10 @@ var EstablecimientoSchema = new Schema({
         x:    { type: Number },
         y:    { type: Number }
     },
-    //ciudad: DBRef,
-    //negocio: DBRef,
+    ciudad: { type: Schema.Types.ObjectId, ref: 'Ciudad' },
+    negocio: { type: Schema.Types.ObjectId, ref: 'Negocio'}
     //comentarios: [DBRef],
     //fotos: [DBRef]
 });
 
-module.exports = mongoose.model('Ciudad', CiudadSchema);
+module.exports = mongoose.model('Establecimiento', EstablecimientoSchema,'Establecimiento');

@@ -13,7 +13,7 @@ app.configure(function() {
 });
 
 // connection to mongodb
-mongoose.connect('mongodb://localhost/yag',function(err,res) {
+var db = mongoose.connect('mongodb://localhost/yag',function(err,res) {
     if(err) {
         console.log('ERROR: conecting to database. ' + err);
     } else {
@@ -23,13 +23,14 @@ mongoose.connect('mongodb://localhost/yag',function(err,res) {
 
 
 
-
 app.get('/',function(req,res) {
     res.send('Hello world');
 });
 
 // importing routes
-est = require('./routes/establecimientos')(app);
+est = require('./routes/establecimientos')(app,mongoose);
+neg = require('./routes/negocios')(app,mongoose,db);
+cit = require('./routes/ciudad')(app,mongoose);
 
 server.listen(3000,function() {
     console.log("Node server running on http://localhost:3000");

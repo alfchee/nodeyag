@@ -1,7 +1,13 @@
 
-module.exports = function(app) {
+module.exports = function(app, mongoose) {
 
-    var Est = require('../models/establecimiento');
+    var Schema = mongoose.Schema;
+    mongoose.set('debug', true);
+
+    var User = require('../models/user.js'),
+        NegocioCat = require('../models/ciudad'),
+        Negocio = require('../models/negocio'),
+        Est = require('../models/establecimiento');
 
     // GET - return all Establecimientos
     findAllEst = function(req, res) {
@@ -16,13 +22,13 @@ module.exports = function(app) {
 
     // GET - return a Establecimiento with specified ID
     findById = function(req, res) {
-        Est.findById(req.params.id, function(err,est) {
-            if(err) console.log('ERROR: ' + err);
-            else {
-                console.log('GET /establecimiento/' + req.params.id);
-                res.send(est);
-            }
-        });
+        Est.findById(req.params.id).
+            populate('ciudad').
+            populate('negocio').exec(function(err,est) {
+                if(err) console.log('ERROR: ' +  err);
+                else
+                    res.send(est);
+            });
     }//findById()
 
     // Link routes and functions

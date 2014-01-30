@@ -1,15 +1,16 @@
 
 
 var mongoose = require('mongoose'),
-    Schema = mongoose.Schema,
-    DBRef = mongoose.SchemaTypes.DBRef;
-    //est = require('../models/establecimiento');
+    Schema = mongoose.Schema;
 
 
 var NegocioSchema = new Schema({
     nombre:    { type: String },
     dirOficinaCentral:   { type: String },
-    //establecimientos: [EstablecimientoSchema]
+    categoria:  { type: Schema.Types.ObjectId, ref: 'NegocioCategoria' },
+    establecimientos: [{ type: Schema.Types.ObjectId, ref: 'Establecimiento' }],
+    usuario: { type: Schema.Types.ObjectId, ref: 'User' }
 });
 
-module.exports = mongoose.model('Negocio', NegocioSchema);
+
+module.exports = mongoose.model('Negocio', NegocioSchema,'Negocio');
