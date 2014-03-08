@@ -22,4 +22,6 @@ var EstablecimientoSchema = new Schema({
     //fotos: [DBRef]
 });
 
+EstablecimientoSchema.index({ "coordinates": "2dsphere" });
+
 module.exports = mongoose.model('Establecimiento', EstablecimientoSchema,'Establecimiento');

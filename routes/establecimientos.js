@@ -15,7 +15,10 @@ module.exports = function(app, mongoose) {
             if(err) console.log('ERROR: ' + err);
             else {
                 console.log('GET /establecimiento');
-                res.send(ests);
+                var jsonpCallback = req.query.callback;
+
+                res.setHeader('Content-Type','text/javascript');
+                res.send(jsonpCallback + "(" + JSON.stringify(ests) + ");");
             }
         });
     }//findAllEst()
@@ -31,8 +34,48 @@ module.exports = function(app, mongoose) {
             });
     }//findById()
 
+    // GET - return the nearest Establecimientos
+    findNearest = function(req, res) {
+        console.log(req.query.lon);
+        console.log(req.query.lat);
+        Est.geoNear([parseFloat(req.query.lat),parseFloat(req.query.lon)],
+            { 
+                near: [parseFloat(req.query.lat),parseFloat(req.query.lon)],
+                spherical: true, 
+                maxDistance: 0.4 / 6371,
+                distanceMultiplier: 6371, 
+                includeLocs: true, 
+                uniqueDocs: true }, function(error, results, stats){
+                    if(error) console.log('ERROR: ' + error);
+                    else {
+                        console.log(results);
+                        var jsonpCallback = req.query.callback;
+
+                        res.setHeader('Content-Type','text/javascript');
+                        res.send(jsonpCallback + '(' + JSON.stringify(results) + ');');
+                    }
+        });
+    }//findNearest()
+
+    // GET - return the result of a query for Establecimientos
+    search = function(req, res) {
+        Est.where('nombre', new RegExp(req.query.q,'i'))
+            .exec(function(err,ests) {
+                if(err) console.log('ERROR: ' + err)
+                else {
+                    console.log('GET /establecimiento/query?q=' + req.query.q);
+                    var jsonpCallback = req.query.callback;
+
+                    res.setHeader('Content-Type','text/javascript');
+                    res.send(jsonpCallback + "(" + JSON.stringify(ests) + ");");
+                }   
+            });
+    }
+
     // Link routes and functions
-    app.get('/establecimiento',findAllEst);
-    app.get('/establecimiento/:id',findById);
+    app.get('/establecimientos',findAllEst);
+    app.get('/establecimientos/near',findNearest);
+    app.get('/establecimientos/search',search);
+    app.get('/establecimientos/:id',findById);
     
 }// end of exportation of the routes

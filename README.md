@@ -15,3 +15,11 @@ NODEYAG es la aplicación REST API que brinda servicios al proyecto de aplicaci�
 
 - Agregar express y mongoose al archivo `package.json` y ejecutar el comando `npm install` para que se instalen las librerías.
 - Ejecutar el comando `npm install mongoose-dbref` para añadir el plugin para mongoose
+
+### Rutas
+- /cities
+- /cities/:id
+- /negocios
+- /establecimientos/
+- /establecimientos/near?lat=xxx&lon=xx
+- /establecimientos/search?q=string

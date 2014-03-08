@@ -16,4 +16,6 @@ var CiudadSchema = new Schema({
     emergenciaServicios: [EmergenciaSchema],
 });
 
+CiudadSchema.index({ 'coordinates': "2dsphere" });
+
 module.exports = mongoose.model('Ciudad', CiudadSchema,'Ciudad');
