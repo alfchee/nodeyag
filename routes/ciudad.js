@@ -27,6 +27,6 @@ module.exports = function(app, mongoose) {
     }//findById()
 
     // link between functions and routes
-    app.get('/cities',findAll);
-    app.get('/cities/:id',findById);
+    app.get('/api/cities',findAll);
+    app.get('/api/cities/:id',findById);
 }

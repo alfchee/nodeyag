@@ -15,10 +15,9 @@ module.exports = function(app, mongoose) {
             if(err) console.log('ERROR: ' + err);
             else {
                 console.log('GET /establecimiento');
-                var jsonpCallback = req.query.callback;
 
                 res.setHeader('Content-Type','text/javascript');
-                res.send(jsonpCallback + "(" + JSON.stringify(ests) + ");");
+                res.send( JSON.stringify(ests) );
             }
         });
     }//findAllEst()
@@ -49,10 +48,9 @@ module.exports = function(app, mongoose) {
                     if(error) console.log('ERROR: ' + error);
                     else {
                         console.log(results);
-                        var jsonpCallback = req.query.callback;
 
                         res.setHeader('Content-Type','text/javascript');
-                        res.send(jsonpCallback + '(' + JSON.stringify(results) + ');');
+                        res.send( JSON.stringify(results) );
                     }
         });
     }//findNearest()
@@ -64,18 +62,17 @@ module.exports = function(app, mongoose) {
                 if(err) console.log('ERROR: ' + err)
                 else {
                     console.log('GET /establecimiento/query?q=' + req.query.q);
-                    var jsonpCallback = req.query.callback;
 
                     res.setHeader('Content-Type','text/javascript');
-                    res.send(jsonpCallback + "(" + JSON.stringify(ests) + ");");
+                    res.send( JSON.stringify(ests) );
                 }   
             });
     }
 
     // Link routes and functions
-    app.get('/establecimientos',findAllEst);
-    app.get('/establecimientos/near',findNearest);
-    app.get('/establecimientos/search',search);
-    app.get('/establecimientos/:id',findById);
+    app.get('/api/establecimientos',findAllEst);
+    app.get('/api/establecimientos/near',findNearest);
+    app.get('/api/establecimientos/search',search);
+    app.get('/api/establecimientos/:id',findById);
     
 }// end of exportation of the routes
