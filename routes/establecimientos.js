@@ -4,10 +4,15 @@ module.exports = function(app, mongoose) {
     var Schema = mongoose.Schema;
     mongoose.set('debug', true);
 
+    // the node file module
+    var fs = require('fs');
+
     var User = require('../models/user.js'),
         NegocioCat = require('../models/ciudad'),
         Negocio = require('../models/negocio'),
-        Est = require('../models/establecimiento');
+        Foto = require('../models/foto'),
+        Est = require('../models/establecimiento'),
+        config = require('../config');
 
     // GET - return all Establecimientos
     findAllEst = function(req, res) {
@@ -24,9 +29,12 @@ module.exports = function(app, mongoose) {
 
     // GET - return a Establecimiento with specified ID
     findById = function(req, res) {
+        //console.log(req.params);
+        console.log(req.params.id);
         Est.findById(req.params.id).
             populate('ciudad').
-            populate('negocio').exec(function(err,est) {
+            populate('negocio').
+            populate('profilePicture').exec(function(err,est) {
                 if(err) console.log('ERROR: ' +  err);
                 else
                     res.send(est);
@@ -69,10 +77,51 @@ module.exports = function(app, mongoose) {
             });
     }
 
+    // POST - add a new picture to an Establecimiento
+    uploadPic = function(req, res) {
+        var user = null;
+        var est = null;
+
+        User.findOne({ 'username' : req.body.user }).exec(function(err,usuario) {
+            if(err) console.log('ERROR: ' + err);
+            else user = usuario;
+        });
+
+        Est.findById(req.body.est).exec(function(err,estb) {
+            if(err) console.log('ERROR: ' + err);
+            else est = estb;
+        });
+
+        var picture = new Foto({ usuario: user._id, establecimiento: est._id });
+        picture.save(function(err){
+            if(err) console.log('ERROR: ' + err);
+            else {
+                fs.readFile(req.files.file.path, function(err,data) {
+                    var imageName = picture._id;
+
+                    // if there's an error
+                    if(!imageName) {
+                        console.log("There was an error");
+                    } else {
+                        var newPath = config.uploadPicsDir + '/establecimientos/fullsize/' + imageName;
+
+                        //write the image in the right folder
+                        fs.writeFile(newPath, data, function(err) {
+                            if(err) console.log('ERROR: ' + err);
+                            else res.send('Ok');
+                        });
+                    }
+                });//end of readFile()
+            }
+        });
+    }//uploadPic()
+
+
     // Link routes and functions
     app.get('/api/establecimientos',findAllEst);
     app.get('/api/establecimientos/near',findNearest);
     app.get('/api/establecimientos/search',search);
+    app.post('/api/establecimientos/upload-pic',uploadPic)
     app.get('/api/establecimientos/:id',findById);
     
 }// end of exportation of the routes

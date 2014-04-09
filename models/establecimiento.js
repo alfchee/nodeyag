@@ -12,14 +12,15 @@ var EstablecimientoSchema = new Schema({
     nombre:    { type: String },
     direccion: { type: String},
     telefonos: [TelefonoSchema],
+    profilePicture: { type: Schema.Types.ObjectId, ref: 'Foto' },
     coordinates: {
         x:    { type: Number },
         y:    { type: Number }
     },
     ciudad: { type: Schema.Types.ObjectId, ref: 'Ciudad' },
-    negocio: { type: Schema.Types.ObjectId, ref: 'Negocio'}
+    negocio: { type: Schema.Types.ObjectId, ref: 'Negocio'},
     //comentarios: [DBRef],
-    //fotos: [DBRef]
+    fotos: [{ type: Schema.Types.ObjectId, ref: 'Foto' }]
 });
 
 EstablecimientoSchema.index({ "coordinates": "2dsphere" });
