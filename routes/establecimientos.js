@@ -79,20 +79,40 @@ module.exports = function(app, mongoose) {
 
     // POST - add a new picture to an Establecimiento
     uploadPic = function(req, res) {
-        var user = null;
-        var est = null;
+        var _objs = {};
 
-        User.findOne({ 'username' : req.body.user }).exec(function(err,usuario) {
+        function retrieveUser(username, callback) {
+            User.findOne({ 'username': username })
+                .exec(function(err, user){
+                    if(err) callback(err,null);
+                    else callback(null,user);
+                });
+        }//retrieveUser()
+
+        function retrieveEst(id, callback) {
+            Est.findById(id)
+                .exec(function(err, estb) {
+                    if(err) callback(err,null);
+                    else callback(null, estb);
+                });
+        }//retrieveEst()
+
+        retrieveUser(req.body.user,function(err,user) {
             if(err) console.log('ERROR: ' + err);
-            else user = usuario;
+            else _objs.user = user;
         });
 
-        Est.findById(req.body.est).exec(function(err,estb) {
+        retrieveEst(req.body.est, function(err, est) {
             if(err) console.log('ERROR: ' + err);
-            else est = estb;
+            else _objs.est = est;
         });
 
-        var picture = new Foto({ usuario: user._id, establecimiento: est._id });
+        if(!_objs.user || !_objs.est) {
+            console.log("Empty both");
+            return;
+        }
+
+        var picture = new Foto({ usuario: _objs.user, establecimiento: _objs.est });
         picture.save(function(err){
             if(err) console.log('ERROR: ' + err);
             else {
@@ -121,7 +141,7 @@ module.exports = function(app, mongoose) {
     app.get('/api/establecimientos',findAllEst);
     app.get('/api/establecimientos/near',findNearest);
     app.get('/api/establecimientos/search',search);
-    app.post('/api/establecimientos/upload-pic',uploadPic)
+    app.post('/establecimientos/upload-pic',uploadPic)
     app.get('/api/establecimientos/:id',findById);
     
 }// end of exportation of the routes

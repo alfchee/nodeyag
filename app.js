@@ -9,7 +9,7 @@ var express = require('express'),
     mongoose = require('mongoose'),
 
     app = express(),
-    server = http.createServer(app).listen( process.env.PORT || config.port );
+    server = http.createServer(app).listen( config.port || process.env.PORT );
     
 
 // connection to mongodb
@@ -54,7 +54,9 @@ app.configure(function() {
 // GET - /
 // @desc:   prove if the server is working
 app.get('/',function(req,res) {
-    res.send('Hello world : ');
+    var users = User.find().exec();
+    console.log(users);
+    res.send('Hello world : ' + users);
 });
 
 
