@@ -109,63 +109,30 @@ module.exports = function(app, mongoose) {
             if(err) return next(err);
 
             console.log(results);
-        });
-        return ;
+            var picture = new Foto({ usuario: _objs.user, establecimiento: _objs.est });
+            picture.save(function(err){
+                if(err) console.log('ERROR: ' + err);
+                else {
+                    fs.readFile(req.files.file.path, function(err,data) {
+                        var imageName = picture._id;
+
+                        // if there's an error
+                        if(!imageName) {
+                            console.log("There was an error");
+                        } else {
+                            var newPath = config.uploadPicsDir + '/establecimientos/fullsize/' + imageName;
+
+                            //write the image in the right folder
+                            fs.writeFile(newPath, data, function(err) {
+                                if(err) console.log('ERROR: ' + err);
+                                else res.send('Ok');
+                            });
+                        }
+                    });//end of readFile()
+                }
+            });
+        });// end async.series()
         
-        /*
-        function retrieveUser(objs,username, callback) {
-            User.findOne({ 'username': username })
-                .exec(function(err, user){
-                    if(err) callback(err,null,null);
-                    else callback(null,user,objs);
-                });
-        }//retrieveUser()
-
-        function retrieveEst(id, callback) {
-            Est.findById(id)
-                .exec(function(err, estb) {
-                    if(err) callback(err,null);
-                    else callback(null, estb);
-                });
-        }//retrieveEst()
-
-        retrieveUser(_objs,req.body.user,function(err,user,_objs) {
-            if(err) console.log('ERROR: ' + err);
-            else _objs.user = user;
-        });
-
-        retrieveEst(req.body.est, function(err, est) {
-            if(err) console.log('ERROR: ' + err);
-            else _objs.est = est;
-        });
-
-        if(!_objs.user || !_objs.est) {
-            console.log("Empty both");
-            return;
-        }*/
-
-        var picture = new Foto({ usuario: _objs.user, establecimiento: _objs.est });
-        picture.save(function(err){
-            if(err) console.log('ERROR: ' + err);
-            else {
-                fs.readFile(req.files.file.path, function(err,data) {
-                    var imageName = picture._id;
-
-                    // if there's an error
-                    if(!imageName) {
-                        console.log("There was an error");
-                    } else {
-                        var newPath = config.uploadPicsDir + '/establecimientos/fullsize/' + imageName;
-
-                        //write the image in the right folder
-                        fs.writeFile(newPath, data, function(err) {
-                            if(err) console.log('ERROR: ' + err);
-                            else res.send('Ok');
-                        });
-                    }
-                });//end of readFile()
-            }
-        });
     }//uploadPic()
 
 
