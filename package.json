@@ -9,6 +9,8 @@
         "bcrypt" : "0.7.x",
         "express-jwt" : "0.2.x",
         "jsonwebtoken" : "0.2.0",
-        "async" : "0.7.0"
+        "async" : "0.7.x",
+        "formidable" : "1.0.x",
+        "fs-extra" : "0.8.x"
     }
 }

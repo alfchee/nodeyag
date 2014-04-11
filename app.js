@@ -3,9 +3,9 @@ var express = require('express'),
     http = require('http'),
 
     config = require('./config'),
-    bcrypt = require('bcrypt'),
+    bcrypt = require('bcrypt'), // bcrypt is a library for encripton
     jwt = require('jsonwebtoken'),
-    expressJwt = require('express-jwt'),
+    expressJwt = require('express-jwt'),  // middleware to handle the JWT Token
     mongoose = require('mongoose'),
 
     app = express(),

@@ -13,7 +13,11 @@ module.exports = function(app, mongoose) {
         Foto = require('../models/foto'),
         Est = require('../models/establecimiento'),
         config = require('../config'),
-        async = require('async');
+        async = require('async'),
+
+        formidable = require('formidable'),  // to handle the files uploaded
+        util = require('util'),
+        fs = require('fs-extra'); // middleware needed to move the files uploaded;
 
     // GET - return all Establecimientos
     findAllEst = function(req, res) {
@@ -104,31 +108,47 @@ module.exports = function(app, mongoose) {
 
                         callback(null,est);
                     })
-            }
+            },
+            function(callback) {
+                var form = new formidable.IncomingForm();
+
+                form.parse(req,function(err,fields,files) {
+                    if(err) return callback(err);
+                    console.log(files);
+                });
+
+                form.on('end',function(fields,files) {
+                    // temporary location of the uploaded file
+                    var tempPath = this.openedFiles[0].path;
+                    // filename of the uploaded file
+                    var fileName = this.openedFiles[0].name;
+
+                    var file = { tempPath: tempPath, fileName: fileName };
+
+                    callback(null,file);
+                })
+            },
         ],function(err,results){
             if(err) return next(err);
 
             console.log(results);
-            var picture = new Foto({ usuario: _objs.user, establecimiento: _objs.est });
+            var user = results[0],
+                est = results[1],
+                file = results[2]
+                newPath = config.uploadPicsDir + '/establecimientos/fullsize/';
+
+            // a lot of thing here are wrong
+            var picture = new Foto({ usuario: user.id, establecimiento: est.id });
             picture.save(function(err){
                 if(err) console.log('ERROR: ' + err);
                 else {
-                    fs.readFile(req.files.file.path, function(err,data) {
-                        var imageName = picture._id;
+                    fs.copy(file.tempPath, config.uploadPicsDir + picture.id + '.jpg' , function(err) {
+                        if(err) return next(err);
 
-                        // if there's an error
-                        if(!imageName) {
-                            console.log("There was an error");
-                        } else {
-                            var newPath = config.uploadPicsDir + '/establecimientos/fullsize/' + imageName;
-
-                            //write the image in the right folder
-                            fs.writeFile(newPath, data, function(err) {
-                                if(err) console.log('ERROR: ' + err);
-                                else res.send('Ok');
-                            });
-                        }
-                    });//end of readFile()
+                        console.log("file success!");
+                        
+                        res.send('Ok');
+                    });//end of copy()
                 }
             });
         });// end async.series()
