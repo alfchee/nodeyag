@@ -12,7 +12,8 @@ module.exports = function(app, mongoose) {
         Negocio = require('../models/negocio'),
         Foto = require('../models/foto'),
         Est = require('../models/establecimiento'),
-        config = require('../config');
+        config = require('../config'),
+        async = require('async');
 
     // GET - return all Establecimientos
     findAllEst = function(req, res) {
@@ -78,14 +79,45 @@ module.exports = function(app, mongoose) {
     }
 
     // POST - add a new picture to an Establecimiento
-    uploadPic = function(req, res) {
+    uploadPic = function(req, res, next) {
         var _objs = {};
+        var username = req.body.user,
+            estId = req.body.est;
 
-        function retrieveUser(username, callback) {
+        async.series([
+            function(callback) {
+                User.findOne({ 'username': username})
+                    .exec(function(err, user){
+                        if(err) return callback(err);
+
+                        if(!user) return callback(new Error("No user whit username " + username + " found."));
+
+                        callback(null,user);
+                    });
+            },
+            function(callback) {
+                Est.findById(estId)
+                    .exec(function(err,est) {
+                        if(err) return callback(err);
+
+                        if(!est) return callback(new Error("No Establecimiento with ID " + estId + " found"));
+
+                        callback(null,est);
+                    })
+            }
+        ],function(err,results){
+            if(err) return next(err);
+
+            console.log(results);
+        });
+        return ;
+        
+        /*
+        function retrieveUser(objs,username, callback) {
             User.findOne({ 'username': username })
                 .exec(function(err, user){
-                    if(err) callback(err,null);
-                    else callback(null,user);
+                    if(err) callback(err,null,null);
+                    else callback(null,user,objs);
                 });
         }//retrieveUser()
 
@@ -97,7 +129,7 @@ module.exports = function(app, mongoose) {
                 });
         }//retrieveEst()
 
-        retrieveUser(req.body.user,function(err,user) {
+        retrieveUser(_objs,req.body.user,function(err,user,_objs) {
             if(err) console.log('ERROR: ' + err);
             else _objs.user = user;
         });
@@ -110,7 +142,7 @@ module.exports = function(app, mongoose) {
         if(!_objs.user || !_objs.est) {
             console.log("Empty both");
             return;
-        }
+        }*/
 
         var picture = new Foto({ usuario: _objs.user, establecimiento: _objs.est });
         picture.save(function(err){
