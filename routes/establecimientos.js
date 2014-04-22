@@ -91,7 +91,6 @@ module.exports = function(app, mongoose) {
             ranking = req.body.rating,
             comment = req.body.comment;
         
-        console.log(req.body);
         async.series([
             function(callback) {
                 User.findOne({ 'username': username})
@@ -122,7 +121,7 @@ module.exports = function(app, mongoose) {
 
             /// TODO: save the comment
             var comentario = new Comentario({
-                usuario: usuario.id,
+                usuario: user.id,
                 establecimiento: est.id,
                 titulo: title,
                 ranking: ranking,
@@ -135,6 +134,19 @@ module.exports = function(app, mongoose) {
             });
         });// end async.series()
     }//addComment()
+
+    getComments = function(req, res) {
+        var estId = req.query.est;
+
+        Comentario.find({ establecimiento: estId})
+                    .exec(function(err,comments) {
+                        if (err) console.log('ERROR: ' + err);
+                        else {
+                            res.setHeader('Content-Type','text/javascript');
+                            res.send( JSON.stringify(comments) );                            
+                        }
+                    });
+    }//getComments()
 
     // POST - add a new picture to an Establecimiento
     uploadPic = function(req, res, next) {
@@ -254,7 +266,8 @@ module.exports = function(app, mongoose) {
     app.get('/api/establecimientos',findAllEst);
     app.get('/api/establecimientos/near',findNearest);
     app.get('/api/establecimientos/search',search);
-    app.post('/establecimientos/addComment',addComment);
+    app.post('/establecimientos/comment',addComment);
+    app.get('/establecimientos/comments',getComments);
     app.post('/establecimientos/upload-pic',uploadPic);
     app.get('/api/establecimientos/:id',findById);
     
