@@ -139,6 +139,7 @@ module.exports = function(app, mongoose) {
         var estId = req.query.est;
 
         Comentario.find({ establecimiento: estId})
+                    .sort('-fecha')
                     .exec(function(err,comments) {
                         if (err) console.log('ERROR: ' + err);
                         else {
