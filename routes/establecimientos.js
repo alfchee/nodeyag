@@ -5,7 +5,7 @@ module.exports = function(app, mongoose) {
     mongoose.set('debug', true);
 
     // the node file module
-    var fs = require('fs');
+    //var fs = require('fs');
 
     var User = require('../models/user.js'),
         NegocioCat = require('../models/ciudad'),
@@ -19,6 +19,7 @@ module.exports = function(app, mongoose) {
         formidable = require('formidable'),  // to handle the files uploaded
         util = require('util'),
         fs = require('fs-extra'); // middleware needed to move the files uploaded;
+
 
     // GET - return all Establecimientos
     findAllEst = function(req, res) {
@@ -155,7 +156,8 @@ module.exports = function(app, mongoose) {
         var username = req.body.user,
             estId = req.body.est;
             console.log(req.body);
-        var form = new formidable.IncomingForm();
+
+        /*var form = new formidable.IncomingForm();
 
         form.parse(req,function(err,fields,files) {
             if(err) console.log(err);
@@ -171,9 +173,9 @@ module.exports = function(app, mongoose) {
             });
 
             res.writeHead(200, {'content-type': 'text/plain'});
-              res.write('received upload:\n\n');
-              res.end(util.inspect({fields: fields, files: files}));
-        });
+            res.write('received upload:\n\n');
+            res.end(util.inspect({fields: fields, files: files}));
+        });*/
 /*
         form.on('end',function(fields,files) {
             // temporary location of the uploaded file
@@ -193,7 +195,7 @@ module.exports = function(app, mongoose) {
             });//end of copy()
             //callback(null,file);
         })*/
-/*
+
         async.series([
             function(callback) {
                 var form = new formidable.IncomingForm();
@@ -241,8 +243,8 @@ module.exports = function(app, mongoose) {
             var user = results[1],
                 est = results[2],
                 file = results[0]
-                //newPath = config.uploadPicsDir + '/establecimientos/fullsize/';
-                newPath = '/Applications/XAMPP/htdocs/yag/web/bundles/upload' + '/establecimientos/fullsize/';
+                newPath = config.uploadPicsDir + '/establecimientos/fullsize/';
+                //newPath = '/Applications/XAMPP/htdocs/yag/web/bundles/upload' + '/establecimientos/fullsize/';
 
             // a lot of thing here are wrong
             var picture = new Foto({ usuario: user.id, establecimiento: est.id });
@@ -259,7 +261,7 @@ module.exports = function(app, mongoose) {
                 }
             });
         });// end async.series()
-        */
+        
     }//uploadPic()
 
 

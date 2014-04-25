@@ -43,7 +43,7 @@ app.configure(function() {
     app.use(enableCors);
     app.use(express.logger());
     app.use(express.compress());
-    app.use(express.bodyParser());
+    //app.use(express.bodyParser());
     app.use(express.methodOverride());
     app.use(express.urlencoded()); // needed to parse POST data sent as JSON payload
     app.use(express.json());
