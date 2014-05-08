@@ -1,33 +1,25 @@
+// server.js
+
+// BASE SETUP
+// ==============================================
 
 var express = require('express'),
-    //http = require('http'),
-    bodyParser = require('body-parser'),
+	bodyParser = require('body-parser'),
     morgan = require('morgan'),
     methodOverride = require('method-override'),
-    compression = require('compression'),
 
     config = require('./config'),
     bcrypt = require('bcrypt'), // bcrypt is a library for encripton
     jwt = require('jsonwebtoken'),
     expressJwt = require('express-jwt'),  // middleware to handle the JWT Token
-    mongoose = require('mongoose'),
+    mongoose = require('mongoose');
 
-    app = express();
+var app     = express();
+var port    = 	process.env.PORT || 3001;
 
-
-// connection to mongodb
-var db = mongoose.connect('mongodb://localhost/yag',function(err,res) {
-    if(err) {
-        console.log('ERROR: conecting to database. ' + err);
-    } else {
-        console.log('Connected to database');
-    }
-});
-
-// Allow node to be run with proxy passing
-// app.enable('trust proxy');
 
 // Configuring Cross Domain
+// ==============================================
 var enableCors = function(req,res,next) {
     res.header('Access-Control-Allow-Origin','*');
     res.header('Access-Control-Allow-Methods','GET,PUT,POST,DELETE,OPTIONS');
@@ -41,30 +33,36 @@ var enableCors = function(req,res,next) {
     }
 };
 
-var env = process.env.NODE_ENV || 'development';
-if('development' == env) {
-    app.use(enableCors);
-    app.use(morgan('dev'));
-    app.use(compression);
-    //app.use(express.urlencoded()); // needed to parse POST data sent as JSON payload
-    //app.use(express.json());
-    app.use(bodyParser());
-    app.use(methodOverride());
-    app.use('/api',expressJwt({ secret: config.sessionSecret }));
-}
+// ENABLING MIDDLEWARES
+// ==============================================
+app.use(enableCors);
+app.use(morgan());
+app.use(bodyParser());
+app.use(methodOverride());
+app.use('/api',expressJwt({ secret: config.sessionSecret }));
 
-
-// GET - /
-// @desc:   prove if the server is working
-app.route('/')
-    .get(function(req,res) {
-        res.send('Hello world  ');
-    });
-
+// CONNECTION TO DB
+// ==============================================
+var db = mongoose.connect('mongodb://localhost/yag',function(err,res) {
+    if(err) {
+        console.log('ERROR: conecting to database. ' + err);
+    } else {
+        console.log('Connected to database');
+    }
+});
 
 var Schema = mongoose.Schema;
     mongoose.set('debug', true),
     User = require('./models/user.js');
+
+
+// ROUTES
+// ==============================================
+
+// sample route with a route the way we're used to seeing it
+app.get('/sample', function(req, res) {
+	res.send('this is a sample!');	
+});
 
 // GET - /api/auth
 // @desc:   check a user's auth status based on cookie
@@ -119,5 +117,9 @@ est = require('./routes/establecimientos')(app,mongoose);
 neg = require('./routes/negocios')(app,mongoose,db);
 cit = require('./routes/ciudad')(app,mongoose);
 
-app.listen( config.port || process.env.PORT );
-console.log("Nodeyag open on port 3001")
+// we'll create our routes here
+
+// START THE SERVER
+// ==============================================
+app.listen(port);
+console.log('Magic happens on port ' + port);

@@ -4,9 +4,6 @@ module.exports = function(app, mongoose) {
     var Schema = mongoose.Schema;
     mongoose.set('debug', true);
 
-    // the node file module
-    //var fs = require('fs');
-
     var User = require('../models/user.js'),
         NegocioCat = require('../models/ciudad'),
         Negocio = require('../models/negocio'),
@@ -88,7 +85,6 @@ module.exports = function(app, mongoose) {
     addComment = function(req,res) {
         console.log(req);
 
-            return;
         var username = req.query.user,
             estId = req.query.est,
             title = req.body.title,
@@ -140,6 +136,7 @@ module.exports = function(app, mongoose) {
         });// end async.series()
     }//addComment()
 
+    // GET - return the Comments related to an Establecimiento Document
     getComments = function(req, res) {
         var estId = req.query.est;
 
@@ -154,67 +151,48 @@ module.exports = function(app, mongoose) {
                     });
     }//getComments()
 
-    // POST - add a new picture to an Establecimiento
-    uploadPic = function(req, res, next) {
-        //console.log(req);
-        /*form.parse(req,function(err,fields,files) {
-            if(err) console.log(err);
+    // GET - return the Foto's related to a Establecimiento Document
+    getPictures = function(req,res) {
+        var estId = req.query.est;
 
-            console.log(JSON.stringify(files));
-            var newPath = '/Applications/XAMPP/htdocs/yag/web/bundles/upload' + '/establecimientos/fullsize/';
-
-            fs.rename(files.file.path, newPath + "test.jpg", function(err) {
-                if (err) {
-                    fs.unlink(newPath + "test.jpg");
-                    fs.rename(files.file.path, newPath + "test.jpg");
+        Foto.find({ establecimiento: estId })
+            .exec(function(err,pics) {
+                if(err) console.log('ERROR: ' + err);
+                else {
+                    res.setHeader('Content-Type','text/javascript');
+                    res.send(JSON.stringify(pics));
                 }
             });
+    }//getPictures
 
-            res.writeHead(200, {'content-type': 'text/plain'});
-            res.write('received upload:\n\n');
-            res.end(util.inspect({fields: fields, files: files}));
-        });*/
-/*
-        form.on('end',function(fields,files) {
-            // temporary location of the uploaded file
-            var tempPath = this.openedFiles[0].path;
-            // filename of the uploaded file
-            var fileName = this.openedFiles[0].name;
-
-            var file = { tempPath: tempPath, fileName: fileName };
-            console.log(file);
-
-            fs.copy(file.tempPath, config.uploadPicsDir + file.fileName , function(err) {
-                if(err) return next(err);
-
-                console.log("file success!");
-
-                //res.send('Ok');
-            });//end of copy()
-            //callback(null,file);
-        })*/
+    // POST - add a new picture to an Establecimiento
+    uploadPic = function(req, res, next) {
         async.waterfall(([
             function(callback) {
-                var form = new formidable.IncomingForm();
+                var form = new formidable.IncomingForm(); // parsing the request
 
                 form.parse(req,function(err,fields,files) {
                     if(err) return callback(err);
 
-                    var username = fields.user;
-                    var estId = fields.est;
+                    // obtaining the information from user related to the picture
+                    var username = fields.user,
+                        estId = fields.est
+                        title = fields.title,
+                        pie = fields.pie;
 
-                    console.log(files);
+                    //console.log(fields);
                     // temporary location of the uploaded file
                     var tempPath = files.file.path;
                     // filename of the uploaded file
                     var fileName = files.file.name;
 
                     file = { tempPath: tempPath, fileName: fileName };
-                    
-                    callback(null,{ username: username, estId: estId, file: file });
+                    //console.log('file: ' + JSON.stringify(file));
+                    callback(null,{ username: username, estId: estId, file: file, title: title, pie: pie });
                 });
             },
             function(Pic, callback) {
+                // searching the user
                 User.findOne({ 'username': Pic.username})
                     .exec(function(err, user){
                         if(err) return callback(err);
@@ -225,6 +203,7 @@ module.exports = function(app, mongoose) {
                     });
             },
             function(Pic,user,callback) {
+                //searching the Establecimiento
                 Est.findById(Pic.estId)
                     .exec(function(err,est) {
                         if(err) return callback(err);
@@ -235,76 +214,35 @@ module.exports = function(app, mongoose) {
                     });
             }
         ]), function(err, result) {
-            var newPath = '/Applications/XAMPP/htdocs/yag/web/bundles/upload' + '/establecimientos/fullsize/';
+            //var newPath = '/Applications/XAMPP/htdocs/yag/web/bundles/upload' + '/establecimientos/fullsize/';
 
-            // a lot of thing here are wrong
-            var picture = new Foto({ usuario: result.user.id, establecimiento: result.est.id });
+            // setting the information of the Foto Document
+            var picture = new Foto({ 
+                                usuario: result.user.id, 
+                                establecimiento: result.est.id,
+                                titulo: result.picture.title,
+                                pieFoto: result.picture.pie,
+                                inCarousel: false 
+                            });
+
+            // saving the Foto Docuent
             picture.save(function(err){
                 if(err) console.log('ERROR: ' + err);
                 else {
-                    //fs.copy(result.picture.file.tempPath, config.uploadPicsDir + picture.id + '.jpg' , function(err) {
-                    fs.copy(result.picture.file.tempPath, newPath + picture.id + '.jpg' , function(err) {
+                    fs.copy(result.picture.file.tempPath, config.uploadPicsDir + picture.id + '.jpg' , function(err) {
+                    //fs.copy(result.picture.file.tempPath, newPath + picture.id + '.jpg' , function(err) {
                         if(err) return next(err);
 
-                        console.log("file success!");
+                        // adding the path attribute, used to seek it in web
+                        picture.path = picture.id + '.jpg';
+                        picture.save(); // saving again
 
+                        //console.log("file success!");
                         res.send('Ok');
                     });//end of copy()
                 }
             });
         });
-
-       
-        /*
-        console.log('after async, username: ' + username);
-        console.log(file);
-        async.series([
-            function(callback) {
-                console.log('inside async, username: ' + username);
-                User.findOne({ 'username': username})
-                    .exec(function(err, user){
-                        if(err) return callback(err);
-
-                        if(!user) return callback(new Error("No user whit username '" + username + "'' found."));
-
-                        callback(null,user);
-                    });
-            },
-            function(callback) {
-                Est.findById(estId)
-                    .exec(function(err,est) {
-                        if(err) return callback(err);
-
-                        if(!est) return callback(new Error("No Establecimiento with ID " + estId + " found"));
-
-                        callback(null,est);
-                    })
-            },
-        ],function(err,results){
-            if(err) return next(err);
-
-            console.log(results);
-            var user = results[0],
-                est = results[1],
-                //newPath = config.uploadPicsDir + '/establecimientos/fullsize/';
-                newPath = '/Applications/XAMPP/htdocs/yag/web/bundles/upload' + '/establecimientos/fullsize/';
-
-            // a lot of thing here are wrong
-            var picture = new Foto({ usuario: user.id, establecimiento: est.id });
-            picture.save(function(err){
-                if(err) console.log('ERROR: ' + err);
-                else {
-                    fs.copy(file.tempPath, config.uploadPicsDir + picture.id + '.jpg' , function(err) {
-                        if(err) return next(err);
-
-                        console.log("file success!");
-
-                        res.send('Ok');
-                    });//end of copy()
-                }
-            });
-        });// end async.series()
-        */
     }//uploadPic()
 
 
