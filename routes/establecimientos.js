@@ -86,11 +86,15 @@ module.exports = function(app, mongoose) {
 
     // POST - add Comments to an Establecimiento
     addComment = function(req,res) {
+        console.log(req);
+
+            return;
         var username = req.query.user,
             estId = req.query.est,
             title = req.body.title,
             ranking = req.body.rating,
             comment = req.body.comment;
+
         
         async.series([
             function(callback) {
@@ -114,7 +118,7 @@ module.exports = function(app, mongoose) {
                     })
             },
         ],function(err,results){
-            if(err) return next(err);
+            if(err) console.log(err);
 
             console.log(results);
             var user = results[0],
@@ -152,14 +156,8 @@ module.exports = function(app, mongoose) {
 
     // POST - add a new picture to an Establecimiento
     uploadPic = function(req, res, next) {
-        var _objs = {};
-        var username = req.body.user,
-            estId = req.body.est;
-            console.log(req.body);
-
-        /*var form = new formidable.IncomingForm();
-
-        form.parse(req,function(err,fields,files) {
+        //console.log(req);
+        /*form.parse(req,function(err,fields,files) {
             if(err) console.log(err);
 
             console.log(JSON.stringify(files));
@@ -195,33 +193,79 @@ module.exports = function(app, mongoose) {
             });//end of copy()
             //callback(null,file);
         })*/
-
-        async.series([
+        async.waterfall(([
             function(callback) {
                 var form = new formidable.IncomingForm();
 
                 form.parse(req,function(err,fields,files) {
                     if(err) return callback(err);
+
+                    var username = fields.user;
+                    var estId = fields.est;
+
                     console.log(files);
-                });
-
-                form.on('end',function(fields,files) {
                     // temporary location of the uploaded file
-                    var tempPath = this.openedFiles[0].path;
+                    var tempPath = files.file.path;
                     // filename of the uploaded file
-                    var fileName = this.openedFiles[0].name;
+                    var fileName = files.file.name;
 
-                    var file = { tempPath: tempPath, fileName: fileName };
-                    console.log(file);
-                    callback(null,file);
-                })
+                    file = { tempPath: tempPath, fileName: fileName };
+                    
+                    callback(null,{ username: username, estId: estId, file: file });
+                });
             },
+            function(Pic, callback) {
+                User.findOne({ 'username': Pic.username})
+                    .exec(function(err, user){
+                        if(err) return callback(err);
+
+                        if(!user) return callback(new Error("No user whit username '" + Pic.username + "'' found."));
+
+                        callback(null,Pic,user);
+                    });
+            },
+            function(Pic,user,callback) {
+                Est.findById(Pic.estId)
+                    .exec(function(err,est) {
+                        if(err) return callback(err);
+
+                        if(!est) return callback(new Error("No Establecimiento with ID " + Pic.estId + " found"));
+
+                        callback(null,{ picture: Pic, user: user, est: est});
+                    });
+            }
+        ]), function(err, result) {
+            var newPath = '/Applications/XAMPP/htdocs/yag/web/bundles/upload' + '/establecimientos/fullsize/';
+
+            // a lot of thing here are wrong
+            var picture = new Foto({ usuario: result.user.id, establecimiento: result.est.id });
+            picture.save(function(err){
+                if(err) console.log('ERROR: ' + err);
+                else {
+                    //fs.copy(result.picture.file.tempPath, config.uploadPicsDir + picture.id + '.jpg' , function(err) {
+                    fs.copy(result.picture.file.tempPath, newPath + picture.id + '.jpg' , function(err) {
+                        if(err) return next(err);
+
+                        console.log("file success!");
+
+                        res.send('Ok');
+                    });//end of copy()
+                }
+            });
+        });
+
+       
+        /*
+        console.log('after async, username: ' + username);
+        console.log(file);
+        async.series([
             function(callback) {
+                console.log('inside async, username: ' + username);
                 User.findOne({ 'username': username})
                     .exec(function(err, user){
                         if(err) return callback(err);
 
-                        if(!user) return callback(new Error("No user whit username " + username + " found."));
+                        if(!user) return callback(new Error("No user whit username '" + username + "'' found."));
 
                         callback(null,user);
                     });
@@ -240,11 +284,10 @@ module.exports = function(app, mongoose) {
             if(err) return next(err);
 
             console.log(results);
-            var user = results[1],
-                est = results[2],
-                file = results[0]
-                newPath = config.uploadPicsDir + '/establecimientos/fullsize/';
-                //newPath = '/Applications/XAMPP/htdocs/yag/web/bundles/upload' + '/establecimientos/fullsize/';
+            var user = results[0],
+                est = results[1],
+                //newPath = config.uploadPicsDir + '/establecimientos/fullsize/';
+                newPath = '/Applications/XAMPP/htdocs/yag/web/bundles/upload' + '/establecimientos/fullsize/';
 
             // a lot of thing here are wrong
             var picture = new Foto({ usuario: user.id, establecimiento: est.id });
@@ -261,7 +304,7 @@ module.exports = function(app, mongoose) {
                 }
             });
         });// end async.series()
-        
+        */
     }//uploadPic()
 
 
