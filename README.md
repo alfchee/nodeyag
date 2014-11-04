@@ -7,7 +7,7 @@ NODEYAG es la aplicaci√≥n REST API que brinda servicios al proyecto de aplicaci√
 
 ### Dependencias
 
-- Express 3.x
+- Express 4.x
 - Mongoose 3.x
 - mongoose-dbref
 - bcrypt 0.7.x
